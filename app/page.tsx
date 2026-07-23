@@ -109,19 +109,19 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* NÚMEROS / DESTAQUES */}
+      {/* DIFERENCIAIS */}
       <section className="bg-white border-b border-gray-100">
         <div className="max-w-6xl mx-auto px-4 py-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
             {[
-              { numero: "45+", label: "Imóveis para alugar" },
-              { numero: "100%", label: "Contratos seguros" },
-              { numero: "MS", label: "Mato Grosso do Sul" },
-              { numero: "CRECI", label: "13.429 — Geisa Macena" },
+              { icon: "🏆", label: "Atendimento especializado" },
+              { icon: "📋", label: "Contratos seguros" },
+              { icon: "📍", label: "Mato Grosso do Sul" },
+              { icon: "✅", label: "CRECI-MS 13.429" },
             ].map((item) => (
-              <div key={item.label}>
-                <p className="font-heading text-2xl font-bold text-yellow-600">{item.numero}</p>
-                <p className="text-sm text-gray-500 mt-1">{item.label}</p>
+              <div key={item.label} className="flex flex-col items-center gap-2">
+                <span className="text-2xl">{item.icon}</span>
+                <p className="text-sm text-gray-600 font-medium">{item.label}</p>
               </div>
             ))}
           </div>
