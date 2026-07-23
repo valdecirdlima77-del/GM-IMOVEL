@@ -1,34 +1,28 @@
 "use client";
 
 import { useState } from "react";
-import { createBrowserClient } from "@supabase/ssr";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 export default function LoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [erro, setErro] = useState("");
   const [carregando, setCarregando] = useState(false);
-
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
     setErro("");
     setCarregando(true);
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password: senha,
+    const res = await fetch("/api/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ senha }),
     });
 
-    if (error) {
-      setErro("E-mail ou senha incorretos. Tente novamente.");
+    if (!res.ok) {
+      setErro("Senha incorreta. Tente novamente.");
       setCarregando(false);
       return;
     }
@@ -39,7 +33,7 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <div className="w-full max-w-md">
+      <div className="w-full max-w-sm">
         {/* Logo */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-2 justify-center">
@@ -52,26 +46,11 @@ export default function LoginPage() {
             </div>
           </Link>
           <h1 className="mt-6 text-2xl font-bold text-gray-800">Área administrativa</h1>
-          <p className="text-sm text-gray-500 mt-1">Entre com suas credenciais para acessar</p>
+          <p className="text-sm text-gray-500 mt-1">Digite a senha para acessar</p>
         </div>
 
-        {/* Card de login */}
         <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
           <form onSubmit={handleLogin} className="space-y-5">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                E-mail
-              </label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                placeholder="geisa@gmimoveis.com.br"
-                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition"
-              />
-            </div>
-
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">
                 Senha
@@ -82,6 +61,7 @@ export default function LoginPage() {
                 onChange={(e) => setSenha(e.target.value)}
                 required
                 placeholder="••••••••"
+                autoFocus
                 className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition"
               />
             </div>
