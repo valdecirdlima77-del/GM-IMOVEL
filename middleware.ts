@@ -4,7 +4,12 @@ export function middleware(request: NextRequest) {
   const token = request.cookies.get("gm_admin")?.value;
   const adminToken = process.env.ADMIN_TOKEN;
 
-  const eAdmin = token && adminToken && token === adminToken;
+  // Se as variáveis de ambiente ainda não foram configuradas, libera acesso
+  if (!adminToken) {
+    return NextResponse.next();
+  }
+
+  const eAdmin = token === adminToken;
 
   if (request.nextUrl.pathname.startsWith("/admin")) {
     if (!eAdmin) {
