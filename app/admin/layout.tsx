@@ -41,10 +41,16 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             Aluguéis
           </Link>
           <Link
-            href="/"
-            className="px-3 py-2 rounded-lg hover:bg-white/10 transition-colors mt-2 text-white/60"
+            href="/admin/configurar"
+            className="px-3 py-2 rounded-lg hover:bg-white/10 transition-colors mt-4 text-white/40 text-xs"
           >
-            Voltar ao site
+            ⚙️ Configurar sistema
+          </Link>
+          <Link
+            href="/"
+            className="px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/60 text-xs"
+          >
+            ← Voltar ao site
           </Link>
           <BotaoLogout />
         </nav>
