@@ -9,12 +9,21 @@ const config: Config = {
     extend: {
       colors: {
         primary: {
-          DEFAULT: "#0F6E5B",
-          dark: "#0A4F41",
+          DEFAULT: "#B8860B",
+          dark: "#8B6508",
+          light: "#D4A829",
+          100: "#F5E6B8",
         },
-        secondary: "#E07A4F",
+        secondary: "#1F2937",
         graphite: "#1F2937",
-        offwhite: "#FAF9F6",
+        offwhite: "#FFFDF5",
+        gold: {
+          DEFAULT: "#B8860B",
+          light: "#D4A829",
+          dark: "#8B6508",
+          50: "#FFF8E1",
+          100: "#F5E6B8",
+        },
         success: "#22C55E",
         warning: "#F59E0B",
         danger: "#DC2626",

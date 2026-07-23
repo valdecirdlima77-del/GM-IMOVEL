@@ -4,9 +4,9 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 
 export const metadata: Metadata = {
-  title: "CasaLar — Seu próximo endereço, com quem conhece o bairro",
+  title: "GM Negócios Imobiliários — Geisa Macena | CRECI-MS 13.429",
   description:
-    "Encontre casas e apartamentos para comprar ou alugar com a CasaLar, sua imobiliária de confiança.",
+    "Assessoria em negócios imobiliários: compra, venda, locação, avaliação, regularização e vistorias. Geisa Macena — CRECI-MS 13.429.",
 };
 
 export default function RootLayout({
