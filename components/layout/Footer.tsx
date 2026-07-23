@@ -38,8 +38,11 @@ export default function Footer() {
           </p>
         </div>
       </div>
-      <div className="text-center text-xs text-gray-400 py-4 border-t border-white/10">
-        © {new Date().getFullYear()} GM Negócios Imobiliários. Todos os direitos reservados.
+      <div className="flex items-center justify-between text-xs text-gray-400 py-4 border-t border-white/10 px-4 max-w-6xl mx-auto">
+        <span>© {new Date().getFullYear()} GM Negócios Imobiliários. Todos os direitos reservados.</span>
+        <a href="/login" className="text-gray-600 hover:text-gray-400 transition-colors">
+          Área administrativa
+        </a>
       </div>
     </footer>
   );

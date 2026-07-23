@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ReactNode } from "react";
+import BotaoLogout from "@/components/admin/BotaoLogout";
 
 type AdminLayoutProps = {
   children: ReactNode;
@@ -45,6 +46,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           >
             Voltar ao site
           </Link>
+          <BotaoLogout />
         </nav>
       </aside>
 
