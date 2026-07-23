@@ -1,0 +1,12 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/verificar-vencimentos",
+      "schedule": "0 12 * * *"
+    },
+    {
+      "path": "/api/cron/relatorio-mensal-proprietarios",
+      "schedule": "0 12 1 * *"
+    }
+  ]
+}

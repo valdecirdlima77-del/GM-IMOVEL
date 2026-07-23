@@ -34,6 +34,12 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             Agendamentos
           </Link>
           <Link
+            href="/admin/alugueis"
+            className="px-3 py-2 rounded-lg hover:bg-white/10 transition-colors"
+          >
+            Aluguéis
+          </Link>
+          <Link
             href="/"
             className="px-3 py-2 rounded-lg hover:bg-white/10 transition-colors mt-2 text-white/60"
           >
