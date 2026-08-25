@@ -1,26 +1,33 @@
 // Leitura centralizada das credenciais do Supabase.
 //
-// Existem dois conjuntos de nomes em circulação:
+// ORDEM DE PRIORIDADE: primeiro os nomes escritos pela integração oficial
+// Supabase↔Vercel, depois os antigos digitados à mão.
 //
-//   nome antigo (legado)              nome novo (integração Supabase↔Vercel)
-//   NEXT_PUBLIC_SUPABASE_ANON_KEY  →  NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
-//   SUPABASE_SERVICE_ROLE_KEY      →  SUPABASE_SECRET_KEY
+// O motivo é concreto: a integração NÃO consegue sobrescrever uma variável que
+// já existe com o mesmo nome — ela falha com "A variable with the name X
+// already exists". Foi o que aconteceu aqui: `NEXT_PUBLIC_SUPABASE_URL` e
+// `NEXT_PUBLIC_SUPABASE_ANON_KEY`, criadas à mão em 23/07 apontando para um
+// projeto Supabase que não existe mais, bloquearam a escrita das novas.
 //
-// O Supabase renomeou as chaves (`anon` virou "publishable", `service_role`
-// virou "secret") e a integração oficial com a Vercel escreve apenas os nomes
-// novos. Aceitar os dois evita que o site quebre dependendo de como o ambiente
-// foi configurado — por variável digitada à mão ou pela integração automática.
+// As demais variáveis da integração passaram normalmente. Então os valores
+// corretos ESTÃO no ambiente, só com outros nomes:
 //
-// A URL também tem duas formas: `NEXT_PUBLIC_SUPABASE_URL` (usada pelo código
-// do navegador) e `SUPABASE_URL` (escrita pela integração).
+//   valor correto (integração)              valor obsoleto (23/07)
+//   SUPABASE_URL                         →  NEXT_PUBLIC_SUPABASE_URL
+//   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY →  NEXT_PUBLIC_SUPABASE_ANON_KEY
+//   SUPABASE_SERVICE_ROLE_KEY / SECRET_KEY  (não existia antes)
+//
+// Preferir os nomes da integração resolve sem depender de apagar variável
+// nenhuma no painel. Os nomes antigos seguem aceitos como alternativa, para
+// que o ambiente local (`.env.local`) continue funcionando igual.
 
 export function urlSupabase(): string {
   const url =
-    process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
+    process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
 
   if (!url) {
     throw new Error(
-      "Endereço do Supabase não configurado (NEXT_PUBLIC_SUPABASE_URL ou SUPABASE_URL)."
+      "Endereço do Supabase não configurado (SUPABASE_URL ou NEXT_PUBLIC_SUPABASE_URL)."
     );
   }
   return url;
@@ -29,12 +36,13 @@ export function urlSupabase(): string {
 // Chave pública — pode ir para o navegador, protegida pelas políticas de RLS.
 export function chavePublicaSupabase(): string {
   const chave =
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
+    process.env.SUPABASE_ANON_KEY ||
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   if (!chave) {
     throw new Error(
-      "Chave pública do Supabase não configurada (NEXT_PUBLIC_SUPABASE_ANON_KEY ou NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY)."
+      "Chave pública do Supabase não configurada (NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY, SUPABASE_ANON_KEY ou NEXT_PUBLIC_SUPABASE_ANON_KEY)."
     );
   }
   return chave;
