@@ -6,11 +6,13 @@ import type { NextRequest } from "next/server";
 // de API ficam fora do matcher dele. Rotas que gravam dados precisam, por
 // isso, fazer esta checagem elas mesmas.
 //
-// Mantém o mesmo comportamento do middleware: se `ADMIN_TOKEN` ainda não foi
-// configurado no ambiente, libera (evita travar um ambiente recém-criado).
+// Sem `ADMIN_TOKEN` configurado, NEGA — mesma regra do middleware.
+// Liberar nesse caso deixaria as rotas de escrita abertas em qualquer ambiente
+// que esquecesse a variável, exatamente o cenário que quase se concretizou no
+// segundo projeto da Vercel (ver o comentário em middleware.ts).
 export function requisicaoAutorizada(request: NextRequest): boolean {
   const adminToken = process.env.ADMIN_TOKEN;
-  if (!adminToken) return true;
+  if (!adminToken) return false;
 
   return request.cookies.get("gm_admin")?.value === adminToken;
 }
