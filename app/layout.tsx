@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
+import ChatWidget from "@/components/ia/ChatWidget";
 
 export const metadata: Metadata = {
   title: "GM Negócios Imobiliários — Geisa Macena | CRECI-MS 13.429",
@@ -20,6 +21,7 @@ export default function RootLayout({
         <Header />
         <main className="flex-1">{children}</main>
         <Footer />
+        <ChatWidget />
       </body>
     </html>
   );
