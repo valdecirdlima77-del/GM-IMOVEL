@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { criarClienteSupabaseServidor } from "@/lib/supabase/server";
+import { criarClienteSupabaseAdmin } from "@/lib/supabase/admin";
+import { requisicaoAutorizada } from "@/lib/auth/admin";
 import { enviarWhatsApp } from "@/lib/notificacoes/whatsapp";
 import { enviarEmail } from "@/lib/notificacoes/email";
 
@@ -8,7 +9,10 @@ type RotaContexto = { params: { id: string } };
 // Reenvia um recibo já existente (sem gerar um novo PDF/número) para o
 // inquilino e/ou proprietário via WhatsApp/e-mail.
 export async function POST(request: NextRequest, context: RotaContexto) {
-  const supabase = criarClienteSupabaseServidor();
+  if (!requisicaoAutorizada(request)) {
+    return NextResponse.json({ erro: "Não autorizado." }, { status: 401 });
+  }
+  const supabase = criarClienteSupabaseAdmin();
   const { destino, meio } = (await request.json()) as {
     destino: "inquilino" | "proprietario" | "ambos";
     meio: "whatsapp" | "email";

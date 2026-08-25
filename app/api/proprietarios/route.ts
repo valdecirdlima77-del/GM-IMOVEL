@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { criarClienteSupabaseServidor } from "@/lib/supabase/server";
+import { criarClienteSupabaseAdmin } from "@/lib/supabase/admin";
+import { requisicaoAutorizada } from "@/lib/auth/admin";
 
 export type PayloadProprietario = {
   nome: string;
@@ -16,8 +17,11 @@ export type PayloadProprietario = {
   ativo: boolean;
 };
 
-export async function GET() {
-  const supabase = criarClienteSupabaseServidor();
+export async function GET(request: NextRequest) {
+  if (!requisicaoAutorizada(request)) {
+    return NextResponse.json({ erro: "Não autorizado." }, { status: 401 });
+  }
+  const supabase = criarClienteSupabaseAdmin();
   const { data, error } = await supabase
     .from("proprietarios")
     .select("*")
@@ -30,7 +34,10 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
-  const supabase = criarClienteSupabaseServidor();
+  if (!requisicaoAutorizada(request)) {
+    return NextResponse.json({ erro: "Não autorizado." }, { status: 401 });
+  }
+  const supabase = criarClienteSupabaseAdmin();
   const payload = (await request.json()) as PayloadProprietario;
 
   if (!payload.nome || !payload.telefone) {

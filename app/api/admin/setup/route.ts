@@ -1,4 +1,5 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { requisicaoAutorizada } from "@/lib/auth/admin";
 
 const SQL_SETUP = `
 -- ENUMs
@@ -176,17 +177,29 @@ begin
 end;
 $$ language plpgsql;
 
--- RLS desativado para uso interno (sem auth Supabase)
-alter table proprietarios disable row level security;
-alter table inquilinos disable row level security;
-alter table imoveis_alugados disable row level security;
-alter table contratos_aluguel disable row level security;
-alter table cobrancas disable row level security;
-alter table pagamentos disable row level security;
-alter table recibos disable row level security;
+-- Observação: este script NÃO desativa mais o Row Level Security.
+--
+-- Ele desativava, com a justificativa de "uso interno, sem auth do Supabase".
+-- Foi o que deixou proprietarios, inquilinos, imoveis_alugados,
+-- contratos_aluguel, cobrancas, pagamentos e recibos legíveis por qualquer
+-- portador da chave pública — que vai dentro do JavaScript do site.
+--
+-- O motivo original deixou de existir: as rotas de API agora usam a chave
+-- privilegiada (service_role), que ignora RLS por natureza. Ou seja, o painel
+-- funciona com RLS ligado.
+--
+-- O SQL que LIGA o RLS está em supabase/rls-administrativo.sql, para ser
+-- aplicado de forma consciente e verificada — não escondido dentro de uma
+-- rota que qualquer um poderia chamar.
 `;
 
-export async function POST() {
+export async function POST(request: NextRequest) {
+  // Esta rota executa DDL no banco com a chave privilegiada. Aberta, permitia
+  // que qualquer pessoa da internet reescrevesse a estrutura do banco.
+  if (!requisicaoAutorizada(request)) {
+    return NextResponse.json({ erro: "Não autorizado." }, { status: 401 });
+  }
+
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 

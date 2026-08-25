@@ -1,9 +1,9 @@
 import Link from "next/link";
-import { criarClienteSupabaseServidor } from "@/lib/supabase/server";
+import { criarClienteSupabaseAdmin } from "@/lib/supabase/admin";
 import { formatarMoeda, formatarData } from "@/lib/formatadores";
 
 export default async function AlugueisDashboardPage() {
-  const supabase = criarClienteSupabaseServidor();
+  const supabase = criarClienteSupabaseAdmin();
 
   const inicioMes = new Date();
   inicioMes.setDate(1);

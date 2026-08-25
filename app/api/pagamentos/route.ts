@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { criarClienteSupabaseServidor } from "@/lib/supabase/server";
+import { criarClienteSupabaseAdmin } from "@/lib/supabase/admin";
+import { requisicaoAutorizada } from "@/lib/auth/admin";
 import { gerarReciboParaPagamento } from "@/lib/recibos/gerar-recibo";
 
 export type PayloadPagamento = {
@@ -11,8 +12,11 @@ export type PayloadPagamento = {
   observacoes: string;
 };
 
-export async function GET() {
-  const supabase = criarClienteSupabaseServidor();
+export async function GET(request: NextRequest) {
+  if (!requisicaoAutorizada(request)) {
+    return NextResponse.json({ erro: "Não autorizado." }, { status: 401 });
+  }
+  const supabase = criarClienteSupabaseAdmin();
   const { data, error } = await supabase
     .from("pagamentos")
     .select(
@@ -29,7 +33,10 @@ export async function GET() {
 // Registra o pagamento (o trigger no banco já marca a cobrança como "pago")
 // e, na sequência, gera e envia o recibo automaticamente.
 export async function POST(request: NextRequest) {
-  const supabase = criarClienteSupabaseServidor();
+  if (!requisicaoAutorizada(request)) {
+    return NextResponse.json({ erro: "Não autorizado." }, { status: 401 });
+  }
+  const supabase = criarClienteSupabaseAdmin();
   const payload = (await request.json()) as PayloadPagamento;
 
   if (!payload.cobranca_id || !payload.valor_pago) {

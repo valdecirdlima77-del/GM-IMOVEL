@@ -1,5 +1,6 @@
-import { NextResponse } from "next/server";
-import { criarClienteSupabaseServidor } from "@/lib/supabase/server";
+import { NextRequest, NextResponse } from "next/server";
+import { criarClienteSupabaseAdmin } from "@/lib/supabase/admin";
+import { cronAutorizado } from "@/lib/auth/cron";
 import { enviarEmail } from "@/lib/notificacoes/email";
 import { enviarWhatsApp } from "@/lib/notificacoes/whatsapp";
 import { formatarMoeda, competenciaLabel } from "@/lib/formatadores";
@@ -7,8 +8,11 @@ import { formatarMoeda, competenciaLabel } from "@/lib/formatadores";
 // Envia, uma vez por mês, um resumo do que cada proprietário recebeu de
 // aluguel no mês corrente. Chame manualmente ou agende no Vercel Cron:
 // { "path": "/api/cron/relatorio-mensal-proprietarios", "schedule": "0 12 1 * *" }
-export async function GET() {
-  const supabase = criarClienteSupabaseServidor();
+export async function GET(request: NextRequest) {
+  if (!cronAutorizado(request)) {
+    return NextResponse.json({ erro: "Não autorizado." }, { status: 401 });
+  }
+  const supabase = criarClienteSupabaseAdmin();
 
   const competencia = new Date().toISOString().slice(0, 7) + "-01";
 

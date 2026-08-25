@@ -1,5 +1,6 @@
-import { NextResponse } from "next/server";
-import { criarClienteSupabaseServidor } from "@/lib/supabase/server";
+import { NextRequest, NextResponse } from "next/server";
+import { criarClienteSupabaseAdmin } from "@/lib/supabase/admin";
+import { cronAutorizado } from "@/lib/auth/cron";
 import { alertarAdminGM } from "@/lib/notificacoes/whatsapp";
 import { formatarData, formatarMoeda } from "@/lib/formatadores";
 
@@ -9,8 +10,11 @@ import { formatarData, formatarMoeda } from "@/lib/formatadores";
 //
 // Para agendar no Vercel, adicione em vercel.json:
 // { "crons": [{ "path": "/api/cron/verificar-vencimentos", "schedule": "0 12 * * *" }] }
-export async function GET() {
-  const supabase = criarClienteSupabaseServidor();
+export async function GET(request: NextRequest) {
+  if (!cronAutorizado(request)) {
+    return NextResponse.json({ erro: "Não autorizado." }, { status: 401 });
+  }
+  const supabase = criarClienteSupabaseAdmin();
 
   await supabase.rpc("marcar_cobrancas_atrasadas");
 

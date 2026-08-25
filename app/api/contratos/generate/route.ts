@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { criarClienteSupabaseServidor } from "@/lib/supabase/server";
+import { criarClienteSupabaseAdmin } from "@/lib/supabase/admin";
+import { requisicaoAutorizada } from "@/lib/auth/admin";
 import { gerarPdfSimples, pdfParaBase64 } from "@/lib/pdf/gerador-pdf";
 import { formatarData, formatarMoeda } from "@/lib/formatadores";
 
@@ -9,7 +10,10 @@ import { formatarData, formatarMoeda } from "@/lib/formatadores";
 // para revisão jurídica antes da assinatura — não substitui um contrato
 // revisado por advogado.
 export async function POST(request: NextRequest) {
-  const supabase = criarClienteSupabaseServidor();
+  if (!requisicaoAutorizada(request)) {
+    return NextResponse.json({ erro: "Não autorizado." }, { status: 401 });
+  }
+  const supabase = criarClienteSupabaseAdmin();
   const { contrato_id: contratoId } = (await request.json()) as {
     contrato_id: string;
   };

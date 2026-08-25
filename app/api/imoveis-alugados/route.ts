@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { criarClienteSupabaseServidor } from "@/lib/supabase/server";
+import { criarClienteSupabaseAdmin } from "@/lib/supabase/admin";
+import { requisicaoAutorizada } from "@/lib/auth/admin";
 
 export type PayloadImovelAlugado = {
   imovel_id: string | null;
@@ -33,8 +34,11 @@ function proximaCompetencia(diaVencimento: number): { competencia: string; venci
   };
 }
 
-export async function GET() {
-  const supabase = criarClienteSupabaseServidor();
+export async function GET(request: NextRequest) {
+  if (!requisicaoAutorizada(request)) {
+    return NextResponse.json({ erro: "Não autorizado." }, { status: 401 });
+  }
+  const supabase = criarClienteSupabaseAdmin();
   const { data, error } = await supabase
     .from("imoveis_alugados")
     .select(
@@ -49,7 +53,10 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
-  const supabase = criarClienteSupabaseServidor();
+  if (!requisicaoAutorizada(request)) {
+    return NextResponse.json({ erro: "Não autorizado." }, { status: 401 });
+  }
+  const supabase = criarClienteSupabaseAdmin();
   const payload = (await request.json()) as PayloadImovelAlugado;
 
   if (!payload.proprietario_id || !payload.endereco_completo || !payload.valor_aluguel) {

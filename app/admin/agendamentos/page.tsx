@@ -1,4 +1,4 @@
-import { criarClienteSupabaseServidor } from "@/lib/supabase/server";
+import { criarClienteSupabaseAdmin } from "@/lib/supabase/admin";
 
 type AgendamentoLinha = {
   id: string;
@@ -26,7 +26,7 @@ const CORES_STATUS: Record<string, string> = {
 };
 
 export default async function AdminAgendamentosPage() {
-  const supabase = criarClienteSupabaseServidor();
+  const supabase = criarClienteSupabaseAdmin();
 
   const { data: agendamentos } = await supabase
     .from("agendamentos")

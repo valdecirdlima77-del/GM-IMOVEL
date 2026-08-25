@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { criarClienteSupabaseServidor } from "@/lib/supabase/server";
+import { criarClienteSupabaseAdmin } from "@/lib/supabase/admin";
 
 type ImovelLinha = {
   id: string;
@@ -29,7 +29,7 @@ const CORES_STATUS: Record<string, string> = {
 };
 
 export default async function AdminListaImoveisPage() {
-  const supabase = criarClienteSupabaseServidor();
+  const supabase = criarClienteSupabaseAdmin();
 
   const { data: imoveis } = await supabase
     .from("imoveis")

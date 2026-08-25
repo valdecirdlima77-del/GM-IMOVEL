@@ -1,4 +1,4 @@
-import { criarClienteSupabaseServidor } from "@/lib/supabase/server";
+import { criarClienteSupabaseAdmin } from "@/lib/supabase/admin";
 import { formatarData, formatarMoeda, competenciaLabel } from "@/lib/formatadores";
 import AcoesCobranca from "@/components/admin/AcoesCobranca";
 
@@ -17,7 +17,7 @@ const CORES_STATUS: Record<string, string> = {
 };
 
 export default async function CobrancasPage() {
-  const supabase = criarClienteSupabaseServidor();
+  const supabase = criarClienteSupabaseAdmin();
   const { data: cobrancas } = await supabase
     .from("cobrancas")
     .select(

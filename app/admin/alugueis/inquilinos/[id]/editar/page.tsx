@@ -1,11 +1,11 @@
 import { notFound } from "next/navigation";
-import { criarClienteSupabaseServidor } from "@/lib/supabase/server";
+import { criarClienteSupabaseAdmin } from "@/lib/supabase/admin";
 import FormularioInquilino from "@/components/admin/FormularioInquilino";
 
 type Props = { params: { id: string } };
 
 export default async function EditarInquilinoPage({ params }: Props) {
-  const supabase = criarClienteSupabaseServidor();
+  const supabase = criarClienteSupabaseAdmin();
   const { data: inquilino } = await supabase
     .from("inquilinos")
     .select("*")

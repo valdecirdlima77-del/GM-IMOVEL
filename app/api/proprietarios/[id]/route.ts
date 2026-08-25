@@ -1,11 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
-import { criarClienteSupabaseServidor } from "@/lib/supabase/server";
+import { criarClienteSupabaseAdmin } from "@/lib/supabase/admin";
+import { requisicaoAutorizada } from "@/lib/auth/admin";
 import type { PayloadProprietario } from "../route";
 
 type RotaContexto = { params: { id: string } };
 
 export async function PUT(request: NextRequest, context: RotaContexto) {
-  const supabase = criarClienteSupabaseServidor();
+  if (!requisicaoAutorizada(request)) {
+    return NextResponse.json({ erro: "Não autorizado." }, { status: 401 });
+  }
+  const supabase = criarClienteSupabaseAdmin();
   const payload = (await request.json()) as PayloadProprietario;
 
   const { data, error } = await supabase
@@ -38,8 +42,11 @@ export async function PUT(request: NextRequest, context: RotaContexto) {
   return NextResponse.json({ proprietario: data });
 }
 
-export async function DELETE(_request: NextRequest, context: RotaContexto) {
-  const supabase = criarClienteSupabaseServidor();
+export async function DELETE(request: NextRequest, context: RotaContexto) {
+  if (!requisicaoAutorizada(request)) {
+    return NextResponse.json({ erro: "Não autorizado." }, { status: 401 });
+  }
+  const supabase = criarClienteSupabaseAdmin();
   const { error } = await supabase
     .from("proprietarios")
     .update({ ativo: false })

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { criarClienteSupabaseServidor } from "@/lib/supabase/server";
+import { criarClienteSupabaseAdmin } from "@/lib/supabase/admin";
 
 function formatarMoeda(valor: number): string {
   return valor.toLocaleString("pt-BR", {
@@ -9,7 +9,7 @@ function formatarMoeda(valor: number): string {
 }
 
 export default async function AdminDashboardPage() {
-  const supabase = criarClienteSupabaseServidor();
+  const supabase = criarClienteSupabaseAdmin();
 
   const inicioMes = new Date();
   inicioMes.setDate(1);

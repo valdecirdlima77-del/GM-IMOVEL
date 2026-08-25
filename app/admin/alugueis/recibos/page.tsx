@@ -1,9 +1,9 @@
-import { criarClienteSupabaseServidor } from "@/lib/supabase/server";
+import { criarClienteSupabaseAdmin } from "@/lib/supabase/admin";
 import { formatarData, formatarDataHora, formatarMoeda } from "@/lib/formatadores";
 import AcoesRecibo from "@/components/admin/AcoesRecibo";
 
 export default async function RecibosPage() {
-  const supabase = criarClienteSupabaseServidor();
+  const supabase = criarClienteSupabaseAdmin();
   const { data: recibos } = await supabase
     .from("recibos")
     .select(

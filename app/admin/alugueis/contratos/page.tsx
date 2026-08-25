@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { criarClienteSupabaseServidor } from "@/lib/supabase/server";
+import { criarClienteSupabaseAdmin } from "@/lib/supabase/admin";
 
 type ContratoLinha = {
   id: string;
@@ -33,7 +33,7 @@ function formatarMoeda(valor: number): string {
 }
 
 export default async function AdminContratosPage() {
-  const supabase = criarClienteSupabaseServidor();
+  const supabase = criarClienteSupabaseAdmin();
 
   const { data: contratos } = await supabase
     .from("contratos_aluguel")

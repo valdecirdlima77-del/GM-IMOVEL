@@ -1,11 +1,11 @@
 import { notFound } from "next/navigation";
-import { criarClienteSupabaseServidor } from "@/lib/supabase/server";
+import { criarClienteSupabaseAdmin } from "@/lib/supabase/admin";
 import FormularioImovelAlugado from "@/components/admin/FormularioImovelAlugado";
 
 type Props = { params: { id: string } };
 
 export default async function EditarLocacaoPage({ params }: Props) {
-  const supabase = criarClienteSupabaseServidor();
+  const supabase = criarClienteSupabaseAdmin();
   const [{ data: locacao }, { data: proprietarios }, { data: inquilinos }] = await Promise.all([
     supabase.from("imoveis_alugados").select("*").eq("id", params.id).maybeSingle(),
     supabase.from("proprietarios").select("id, nome").eq("ativo", true).order("nome"),

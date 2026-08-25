@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { criarClienteSupabaseServidor } from "@/lib/supabase/server";
+import { criarClienteSupabaseAdmin } from "@/lib/supabase/admin";
 
 type ProprietarioLinha = {
   id: string;
@@ -12,7 +12,7 @@ type ProprietarioLinha = {
 };
 
 export default async function ProprietariosPage() {
-  const supabase = criarClienteSupabaseServidor();
+  const supabase = criarClienteSupabaseAdmin();
   const { data: proprietarios } = await supabase
     .from("proprietarios")
     .select("id, nome, telefone, email, banco, comissao_percentual, ativo")

@@ -1,11 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
-import { criarClienteSupabaseServidor } from "@/lib/supabase/server";
+import { criarClienteSupabaseAdmin } from "@/lib/supabase/admin";
+import { requisicaoAutorizada } from "@/lib/auth/admin";
 import type { PayloadImovelAlugado } from "../route";
 
 type RotaContexto = { params: { id: string } };
 
 export async function PUT(request: NextRequest, context: RotaContexto) {
-  const supabase = criarClienteSupabaseServidor();
+  if (!requisicaoAutorizada(request)) {
+    return NextResponse.json({ erro: "Não autorizado." }, { status: 401 });
+  }
+  const supabase = criarClienteSupabaseAdmin();
   const payload = (await request.json()) as PayloadImovelAlugado;
 
   const { data, error } = await supabase

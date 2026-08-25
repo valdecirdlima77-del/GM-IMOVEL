@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { criarClienteSupabaseServidor } from "@/lib/supabase/server";
+import { criarClienteSupabaseAdmin } from "@/lib/supabase/admin";
 
 type InquilinoLinha = {
   id: string;
@@ -11,7 +11,7 @@ type InquilinoLinha = {
 };
 
 export default async function InquilinosPage() {
-  const supabase = criarClienteSupabaseServidor();
+  const supabase = criarClienteSupabaseAdmin();
   const { data: inquilinos } = await supabase
     .from("inquilinos")
     .select("id, nome, telefone, email, cpf, ativo")

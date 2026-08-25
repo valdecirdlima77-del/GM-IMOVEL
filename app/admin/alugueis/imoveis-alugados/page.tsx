@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { criarClienteSupabaseServidor } from "@/lib/supabase/server";
+import { criarClienteSupabaseAdmin } from "@/lib/supabase/admin";
 import { formatarMoeda } from "@/lib/formatadores";
 
 const ROTULOS_STATUS: Record<string, string> = {
@@ -17,7 +17,7 @@ const CORES_STATUS: Record<string, string> = {
 };
 
 export default async function ImoveisAlugadosPage() {
-  const supabase = criarClienteSupabaseServidor();
+  const supabase = criarClienteSupabaseAdmin();
   const { data: locacoes } = await supabase
     .from("imoveis_alugados")
     .select(
