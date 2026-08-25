@@ -292,9 +292,12 @@ antes — leva dias. **Isso deve começar cedo**, não na última fase.
 
 ### FASE 2 — Financeiro vira Administrativo
 
-1. Tabelas de **despesas** e **repasses** + cálculo do líquido
-2. **Demonstrativo de repasse** em PDF (reaproveitar `lib/pdf/gerador-pdf.ts`,
-   que já gera recibo)
+1. ✅ **25/08/2026** — Tabelas de **despesas** e **repasses** + cálculo do
+   líquido. Branch `feat/despesas-repasses`. Aguardando: (a) aplicar
+   `supabase/despesas-repasses-schema.sql` no Supabase, (b) ligar RLS nessas
+   2 tabelas junto com `rls-administrativo.sql`, (c) merge na `main`.
+2. ✅ **Demonstrativo de repasse** em PDF (reaproveitou `lib/pdf/gerador-pdf.ts`,
+   igual ao recibo) — `lib/repasses/gerar-demonstrativo.ts`
 3. Aditivos, renovações e rescisões em `contratos_aluguel`
 4. **Manutenções** com o ciclo chamado → orçamento → aprovação → execução → encerramento
 5. **Documentos** com vínculo amplo (upload igual ao de fotos, já pronto)
