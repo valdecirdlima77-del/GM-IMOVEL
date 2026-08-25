@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { criarClienteSupabaseServidor } from "@/lib/supabase/server";
+import { criarClienteSupabaseAdmin } from "@/lib/supabase/admin";
+import { requisicaoAutorizada } from "@/lib/auth/admin";
 
 type PayloadImovel = {
   titulo: string;
@@ -27,7 +28,7 @@ type PayloadImovel = {
 const EMAIL_CORRETOR_PADRAO = "geisa@gmimoveis.local";
 
 async function obterOuCriarCorretorPadrao(
-  supabase: ReturnType<typeof criarClienteSupabaseServidor>
+  supabase: ReturnType<typeof criarClienteSupabaseAdmin>
 ): Promise<{ id: string } | null> {
   const { data: corretorExistente } = await supabase
     .from("corretores")
@@ -82,7 +83,28 @@ async function obterOuCriarCorretorPadrao(
 }
 
 export async function POST(request: NextRequest) {
-  const supabase = criarClienteSupabaseServidor();
+  if (!requisicaoAutorizada(request)) {
+    return NextResponse.json({ erro: "Não autorizado." }, { status: 401 });
+  }
+
+  // Cliente com service_role: a tabela `imoveis` tem RLS habilitado com
+  // políticas que dependem de auth.uid(), e este painel não usa Supabase Auth
+  // (autentica por cookie próprio). Sem isso, o INSERT é recusado pelo RLS.
+  let supabase;
+  try {
+    supabase = criarClienteSupabaseAdmin();
+  } catch (erro) {
+    return NextResponse.json(
+      {
+        erro:
+          erro instanceof Error
+            ? erro.message
+            : "Configuração do Supabase ausente.",
+      },
+      { status: 500 }
+    );
+  }
+
   const payload = (await request.json()) as PayloadImovel;
 
   if (!payload.titulo || !payload.slug) {

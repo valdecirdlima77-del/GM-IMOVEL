@@ -3,6 +3,7 @@
 import { useParams, useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
 import { criarClienteSupabase } from "@/lib/supabase/client";
+import UploadFotos from "@/components/admin/UploadFotos";
 
 const TIPOS = ["casa", "apartamento", "terreno", "comercial", "rural"];
 const FINALIDADES = ["venda", "aluguel"];
@@ -239,6 +240,10 @@ export default function EditarImovelPage() {
           {mensagemSucesso}
         </div>
       )}
+
+      <div className="mb-6">
+        <UploadFotos imovelId={imovelId} />
+      </div>
 
       <form onSubmit={aoEnviar} className="space-y-6">
         <section className="bg-white border border-gray-200 rounded-xl p-5 space-y-4">

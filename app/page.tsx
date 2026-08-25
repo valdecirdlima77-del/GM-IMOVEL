@@ -7,7 +7,9 @@ export default async function HomePage() {
 
   const { data: imoveis } = await supabase
     .from("imoveis")
-    .select("slug, titulo, preco, quartos, area_util, finalidade, tipo, enderecos(bairro, cidade)")
+    .select(
+      "slug, titulo, preco, quartos, area_util, finalidade, tipo, enderecos(bairro, cidade), fotos(url, principal)"
+    )
     .eq("status", "publicado")
     .order("criado_em", { ascending: false })
     .limit(6);
@@ -147,20 +149,25 @@ export default async function HomePage() {
 
         {imoveis && imoveis.length > 0 ? (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {imoveis.map((imovel: Record<string, unknown>) => (
-              <ImovelCard
-                key={imovel.slug as string}
-                slug={imovel.slug as string}
-                titulo={imovel.titulo as string}
-                bairro={(imovel.enderecos as Record<string, string>)?.bairro ?? ""}
-                cidade={(imovel.enderecos as Record<string, string>)?.cidade ?? ""}
-                preco={imovel.preco as number}
-                quartos={imovel.quartos as number}
-                areaUtil={imovel.area_util as number}
-                finalidade={imovel.finalidade as string}
-                tipo={imovel.tipo as string}
-              />
-            ))}
+            {imoveis.map((imovel: Record<string, unknown>) => {
+              const fotos = (imovel.fotos as { url: string; principal: boolean }[]) ?? [];
+              const fotoUrl = fotos.find((f) => f.principal)?.url ?? fotos[0]?.url;
+              return (
+                <ImovelCard
+                  key={imovel.slug as string}
+                  slug={imovel.slug as string}
+                  titulo={imovel.titulo as string}
+                  bairro={(imovel.enderecos as Record<string, string>)?.bairro ?? ""}
+                  cidade={(imovel.enderecos as Record<string, string>)?.cidade ?? ""}
+                  preco={imovel.preco as number}
+                  quartos={imovel.quartos as number}
+                  areaUtil={imovel.area_util as number}
+                  fotoUrl={fotoUrl}
+                  finalidade={imovel.finalidade as string}
+                  tipo={imovel.tipo as string}
+                />
+              );
+            })}
           </div>
         ) : (
           <div className="text-center py-16 bg-gray-50 rounded-2xl border border-dashed border-gray-200">

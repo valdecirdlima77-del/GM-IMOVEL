@@ -144,10 +144,13 @@ export default function NovoImovelPage() {
         return;
       }
 
-      setMensagemSucesso("Imóvel cadastrado com sucesso!");
+      setMensagemSucesso("Imóvel cadastrado! Agora envie as fotos...");
+      const imovelId = resultado.imovel?.id;
       setTimeout(() => {
-        router.push("/admin/imoveis");
-      }, 1200);
+        router.push(
+          imovelId ? `/admin/imoveis/${imovelId}/editar` : "/admin/imoveis"
+        );
+      }, 900);
     } catch (erro) {
       setMensagemErro("Erro de conexão. Tente novamente.");
     } finally {

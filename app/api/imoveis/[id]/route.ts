@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { criarClienteSupabaseServidor } from "@/lib/supabase/server";
+import { criarClienteSupabaseAdmin } from "@/lib/supabase/admin";
+import { requisicaoAutorizada } from "@/lib/auth/admin";
 
 type PayloadImovel = {
   titulo: string;
@@ -29,7 +30,27 @@ type RotaContexto = {
 };
 
 export async function PUT(request: NextRequest, context: RotaContexto) {
-  const supabase = criarClienteSupabaseServidor();
+  if (!requisicaoAutorizada(request)) {
+    return NextResponse.json({ erro: "Não autorizado." }, { status: 401 });
+  }
+
+  // service_role pelo mesmo motivo do POST: RLS de `imoveis` depende de
+  // auth.uid(), inexistente neste painel (autenticação por cookie próprio).
+  let supabase;
+  try {
+    supabase = criarClienteSupabaseAdmin();
+  } catch (erro) {
+    return NextResponse.json(
+      {
+        erro:
+          erro instanceof Error
+            ? erro.message
+            : "Configuração do Supabase ausente.",
+      },
+      { status: 500 }
+    );
+  }
+
   const payload = (await request.json()) as PayloadImovel;
   const imovelId = context.params.id;
 
