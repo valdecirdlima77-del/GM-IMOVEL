@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { urlSupabase, chavePublicaSupabase } from "./credenciais";
 
 // Cliente Supabase para uso em Server Components e Route Handlers.
 // Lê/escreve o cookie de sessão automaticamente para manter o login do usuário.
@@ -7,8 +8,8 @@ export function criarClienteSupabaseServidor() {
   const cookieStore = cookies();
 
   return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    urlSupabase(),
+    chavePublicaSupabase(),
     {
       cookies: {
         get(name: string) {
