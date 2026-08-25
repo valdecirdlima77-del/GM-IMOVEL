@@ -27,6 +27,27 @@ const RESPOSTA_PROVISORIA =
 const WHATSAPP_URL =
   "https://wa.me/5567998500610?text=Ol%C3%A1%2C%20Geisa!%20Vim%20pelo%20site%20da%20GM%20Neg%C3%B3cios%20Imobili%C3%A1rios%20e%20gostaria%20de%20mais%20informa%C3%A7%C3%B5es.";
 
+// Id anônimo por visitante, só para a Agente Geisa manter o contexto da
+// conversa entre mensagens (não é dado pessoal — gerado no navegador,
+// nunca enviado a lugar nenhum além de /api/ia/chat).
+function obterVisitanteId(): string {
+  const CHAVE = "gm_visitante_id";
+  try {
+    const existente = window.localStorage.getItem(CHAVE);
+    if (existente) return existente;
+    const novo =
+      typeof crypto !== "undefined" && "randomUUID" in crypto
+        ? crypto.randomUUID()
+        : `v-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    window.localStorage.setItem(CHAVE, novo);
+    return novo;
+  } catch {
+    // Storage indisponível (modo privado, etc.) — ainda funciona, só sem
+    // lembrar o contexto entre recarregamentos da página.
+    return `v-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  }
+}
+
 export default function ChatWidget() {
   const pathname = usePathname();
   const [aberto, setAberto] = useState<boolean>(false);
@@ -89,7 +110,7 @@ export default function ChatWidget() {
       const resposta = await fetch("/api/ia/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mensagem: texto }),
+        body: JSON.stringify({ mensagem: texto, visitante_id: obterVisitanteId() }),
       });
 
       if (!resposta.ok) {

@@ -1,19 +1,29 @@
 import { NextRequest, NextResponse } from "next/server";
 
-// Rota do assistente virtual — RESPOSTA FIXA.
+// Rota do assistente virtual.
 //
-// Ainda não há IA conectada: nenhum provedor externo, nenhuma biblioteca nova,
-// nenhum acesso ao Supabase. Esta rota existe para fechar o circuito entre o
-// ChatWidget e o servidor, com o contrato de dados já no formato definitivo.
+// PREPARADA para chamar a Agente Geisa de verdade, mas com resposta fixa
+// como padrão de segurança: só troca de comportamento se as DUAS variáveis
+// abaixo estiverem configuradas. Sem elas, continua devolvendo `RESPOSTA`
+// fixa — nenhuma ligação acontece sem configuração explícita.
 //
-// Quando o agente for ligado, o único ponto de troca é o valor de `RESPOSTA`
-// abaixo — o formato de entrada e saída permanece o mesmo.
+//   AGENTE_GEISA_URL    — ex.: https://agente-geisa.onrender.com
+//   AGENTE_SECRET       — mesmo segredo usado em app/api/agente/* (Agente
+//                          Geisa envia de volta como Authorization: Bearer)
+//
+// Ver docs/CATALOGO_INTEGRACAO_GM_ADMIN.md (repo da Agente Geisa) para o
+// plano completo. Decisão de negócio pendente antes de configurar essas
+// variáveis em Production: ligar já (com "nenhum imóvel no momento") ou só
+// depois do 1º imóvel real cadastrado.
 
-const RESPOSTA =
+const RESPOSTA_FIXA =
   "Olá, sou a assistente virtual da Geisa. Em breve poderei ajudar você a encontrar imóveis e agendar visitas.";
+
+const TIMEOUT_MS = 8000;
 
 type CorpoRequisicao = {
   mensagem?: unknown;
+  visitante_id?: unknown;
 };
 
 export async function POST(request: NextRequest) {
@@ -35,5 +45,41 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  return NextResponse.json({ resposta: RESPOSTA });
+  const urlAgente = process.env.AGENTE_GEISA_URL;
+  const segredo = process.env.AGENTE_SECRET;
+
+  if (!urlAgente || !segredo) {
+    return NextResponse.json({ resposta: RESPOSTA_FIXA });
+  }
+
+  const visitanteId =
+    typeof corpo.visitante_id === "string" && corpo.visitante_id.trim()
+      ? corpo.visitante_id
+      : `anonimo-${Date.now()}`;
+
+  try {
+    const controlador = new AbortController();
+    const timeout = setTimeout(() => controlador.abort(), TIMEOUT_MS);
+
+    const resposta = await fetch(`${urlAgente.replace(/\/$/, "")}/api/chat/site`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${segredo}`,
+      },
+      body: JSON.stringify({ mensagem: corpo.mensagem, visitante_id: visitanteId }),
+      signal: controlador.signal,
+    });
+    clearTimeout(timeout);
+
+    if (!resposta.ok) {
+      return NextResponse.json({ resposta: RESPOSTA_FIXA });
+    }
+
+    const dados = (await resposta.json()) as { resposta?: string };
+    return NextResponse.json({ resposta: dados.resposta || RESPOSTA_FIXA });
+  } catch {
+    // Agente Geisa fora do ar/lenta — nunca deixa o visitante sem resposta.
+    return NextResponse.json({ resposta: RESPOSTA_FIXA });
+  }
 }
