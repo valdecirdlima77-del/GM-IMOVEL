@@ -9,6 +9,8 @@ const ABAS = [
   { href: "/admin/alugueis/cobrancas", rotulo: "Cobranças" },
   { href: "/admin/alugueis/pagamentos", rotulo: "Pagamentos" },
   { href: "/admin/alugueis/recibos", rotulo: "Recibos" },
+  { href: "/admin/alugueis/despesas", rotulo: "Despesas" },
+  { href: "/admin/alugueis/repasses", rotulo: "Repasses" },
 ];
 
 export default function AlugueisLayout({ children }: { children: ReactNode }) {

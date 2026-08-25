@@ -4,9 +4,12 @@ import { cronAutorizado } from "@/lib/auth/cron";
 import { enviarEmail } from "@/lib/notificacoes/email";
 import { enviarWhatsApp } from "@/lib/notificacoes/whatsapp";
 import { formatarMoeda, competenciaLabel } from "@/lib/formatadores";
+import { gerarRepasse } from "@/lib/repasses/calcular-repasse";
 
-// Envia, uma vez por mês, um resumo do que cada proprietário recebeu de
-// aluguel no mês corrente. Chame manualmente ou agende no Vercel Cron:
+// Gera o repasse do mês (aplicando comissao_percentual e despesas
+// repassáveis — ver lib/repasses/calcular-repasse.ts) e envia, para cada
+// proprietário, um resumo com o valor líquido a receber. Chame manualmente
+// ou agende no Vercel Cron:
 // { "path": "/api/cron/relatorio-mensal-proprietarios", "schedule": "0 12 1 * *" }
 export async function GET(request: NextRequest) {
   if (!cronAutorizado(request)) {
@@ -37,10 +40,6 @@ export async function GET(request: NextRequest) {
     const linhas = (cobrancas ?? []) as any[];
     if (linhas.length === 0) continue;
 
-    const total = linhas
-      .filter((c) => c.status === "pago")
-      .reduce((soma, c) => soma + Number(c.valor_previsto), 0);
-
     const resumo = linhas
       .map(
         (c) =>
@@ -50,9 +49,18 @@ export async function GET(request: NextRequest) {
       )
       .join("\n");
 
+    const repasse = await gerarRepasse(proprietario.id, competencia);
+    const resumoRepasse =
+      "erro" in repasse
+        ? "Não foi possível calcular o repasse deste mês."
+        : `Bruto: ${formatarMoeda(repasse.repasse.valor_bruto)} · ` +
+          `Taxa de administração: ${formatarMoeda(repasse.repasse.taxa_administracao)} · ` +
+          `Despesas: ${formatarMoeda(repasse.repasse.total_despesas)} · ` +
+          `Valor líquido: ${formatarMoeda(repasse.repasse.valor_liquido)}`;
+
     const mensagem =
       `Relatório de ${competenciaLabel(competencia)} — GM Negócios Imobiliários.\n` +
-      `Total recebido: ${formatarMoeda(total)}.\n${resumo}`;
+      `${resumoRepasse}\n\nCobranças do mês:\n${resumo}`;
 
     if (proprietario.telefone) {
       await enviarWhatsApp(proprietario.telefone, mensagem);

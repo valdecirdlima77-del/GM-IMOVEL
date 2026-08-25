@@ -23,6 +23,8 @@ const GRUPOS = [
       { href: "/admin/alugueis/cobrancas", label: "Cobranças", icone: "💰" },
       { href: "/admin/alugueis/pagamentos", label: "Pagamentos", icone: "💳" },
       { href: "/admin/alugueis/recibos", label: "Recibos", icone: "🧾" },
+      { href: "/admin/alugueis/despesas", label: "Despesas", icone: "🧰" },
+      { href: "/admin/alugueis/repasses", label: "Repasses", icone: "🏦" },
       { href: "/admin/alugueis/imoveis-alugados", label: "Imóveis alugados", icone: "🔑" },
       { href: "/admin/alugueis/proprietarios", label: "Proprietários", icone: "👤" },
       { href: "/admin/alugueis/inquilinos", label: "Inquilinos", icone: "🧑" },
