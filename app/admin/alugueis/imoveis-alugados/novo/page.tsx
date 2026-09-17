@@ -3,6 +3,12 @@ import FormularioImovelAlugado, {
   IMOVEL_ALUGADO_VAZIO,
 } from "@/components/admin/FormularioImovelAlugado";
 
+// Sem isso, o Next.js cacheia a primeira resposta do Supabase e o admin
+// para de refletir dados novos (mesmo bug corrigido em app/page.tsx e
+// app/imoveis/[slug]/page.tsx).
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function NovaLocacaoPage() {
   const supabase = criarClienteSupabaseAdmin();
   const [{ data: proprietarios }, { data: inquilinos }] = await Promise.all([

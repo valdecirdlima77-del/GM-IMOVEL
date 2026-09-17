@@ -1,5 +1,11 @@
 import { criarClienteSupabaseAdmin } from "@/lib/supabase/admin";
 
+// Sem isso, o Next.js cacheia a primeira resposta do Supabase e o admin
+// para de refletir dados novos (mesmo bug corrigido em app/page.tsx e
+// app/imoveis/[slug]/page.tsx).
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 type AgendamentoLinha = {
   id: string;
   data_hora: string;

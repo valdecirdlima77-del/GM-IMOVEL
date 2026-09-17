@@ -2,6 +2,11 @@ import { notFound } from "next/navigation";
 import { criarClienteSupabaseAdmin } from "@/lib/supabase/admin";
 import FormularioImovelAlugado from "@/components/admin/FormularioImovelAlugado";
 
+// Sem isso, o Next.js cacheia a primeira resposta do Supabase (mesmo bug
+// corrigido em app/page.tsx).
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 type Props = { params: { id: string } };
 
 export default async function EditarLocacaoPage({ params }: Props) {

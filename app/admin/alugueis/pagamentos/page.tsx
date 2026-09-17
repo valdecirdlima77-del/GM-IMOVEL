@@ -1,6 +1,12 @@
 import { criarClienteSupabaseAdmin } from "@/lib/supabase/admin";
 import { formatarData, formatarMoeda } from "@/lib/formatadores";
 
+// Sem isso, o Next.js cacheia a primeira resposta do Supabase e o admin
+// para de refletir dados novos (mesmo bug corrigido em app/page.tsx e
+// app/imoveis/[slug]/page.tsx).
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function PagamentosPage() {
   const supabase = criarClienteSupabaseAdmin();
   const { data: pagamentos } = await supabase
