@@ -18,7 +18,14 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ erro: "Não autorizado." }, { status: 401 });
   }
 
-  const telefone = request.nextUrl.searchParams.get("telefone");
+  const telefoneBruto = request.nextUrl.searchParams.get("telefone");
+  if (!telefoneBruto) {
+    return NextResponse.json({ erro: "Parâmetro telefone é obrigatório." }, { status: 400 });
+  }
+
+  // Só dígitos: impede injeção de filtro extra via `.or()` (ex.: telefone
+  // com vírgula adicionando uma condição sempre verdadeira).
+  const telefone = telefoneBruto.replace(/\D/g, "");
   if (!telefone) {
     return NextResponse.json({ erro: "Parâmetro telefone é obrigatório." }, { status: 400 });
   }

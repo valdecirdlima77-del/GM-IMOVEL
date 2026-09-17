@@ -21,17 +21,41 @@ const FORMULARIO_INICIAL: FormularioContato = {
 export default function ContatoPage() {
   const [form, setForm] = useState<FormularioContato>(FORMULARIO_INICIAL);
   const [enviado, setEnviado] = useState<boolean>(false);
+  const [enviando, setEnviando] = useState<boolean>(false);
+  const [erro, setErro] = useState<string>("");
 
   function atualizarCampo(campo: keyof FormularioContato, valor: string): void {
     setForm((atual) => ({ ...atual, [campo]: valor }));
   }
 
-  function aoEnviar(e: FormEvent<HTMLFormElement>) {
+  async function aoEnviar(e: FormEvent<HTMLFormElement>): Promise<void> {
     e.preventDefault();
-    // Sem backend de mensagens ainda — por enquanto apenas confirma o envio
-    // na tela. Pode futuramente gravar em `mensagens` no Supabase.
-    setEnviado(true);
-    setForm(FORMULARIO_INICIAL);
+    setErro("");
+    setEnviando(true);
+
+    try {
+      const resposta = await fetch("/api/mensagens", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+
+      if (!resposta.ok) {
+        const dados = (await resposta.json()) as { erro?: string };
+        throw new Error(dados.erro ?? "Falha ao enviar a mensagem.");
+      }
+
+      setEnviado(true);
+      setForm(FORMULARIO_INICIAL);
+    } catch (erroCapturado) {
+      setErro(
+        erroCapturado instanceof Error
+          ? erroCapturado.message
+          : "Falha ao enviar a mensagem."
+      );
+    } finally {
+      setEnviando(false);
+    }
   }
 
   const mensagemWhatsapp = encodeURIComponent(
@@ -53,6 +77,12 @@ export default function ContatoPage() {
           {enviado && (
             <div className="bg-success/10 text-success text-sm rounded-lg px-4 py-3">
               Mensagem enviada! Em breve entraremos em contato.
+            </div>
+          )}
+
+          {erro && (
+            <div className="bg-danger/10 text-danger text-sm rounded-lg px-4 py-3">
+              {erro}
             </div>
           )}
 
@@ -109,9 +139,10 @@ export default function ContatoPage() {
 
           <button
             type="submit"
-            className="bg-primary text-white font-medium px-6 py-2.5 rounded-lg hover:bg-primary-dark transition-colors"
+            disabled={enviando}
+            className="bg-primary text-white font-medium px-6 py-2.5 rounded-lg hover:bg-primary-dark transition-colors disabled:opacity-60"
           >
-            Enviar mensagem
+            {enviando ? "Enviando..." : "Enviar mensagem"}
           </button>
         </form>
 

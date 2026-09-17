@@ -20,10 +20,14 @@ export async function GET(request: NextRequest) {
   const finalidade = params.get("finalidade");
 
   const supabase = criarClienteSupabaseAdmin();
+  // enderecos!inner: sem o !inner o PostgREST não usa o filtro de
+  // cidade/bairro para restringir as linhas de `imoveis`, só filtra o
+  // conteúdo aninhado — cidade/bairro informados pela Agente Geisa não
+  // filtravam nada.
   let query = supabase
     .from("imoveis")
     .select(
-      "id, titulo, slug, tipo, finalidade, preco, condominio, iptu, area_util, quartos, banheiros, vagas_garagem, enderecos(bairro, cidade, estado)"
+      "id, titulo, slug, tipo, finalidade, preco, condominio, iptu, area_util, quartos, banheiros, vagas_garagem, enderecos!inner(bairro, cidade, estado)"
     )
     .eq("status", "publicado")
     .order("criado_em", { ascending: false })

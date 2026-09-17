@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requisicaoAutorizada } from "@/lib/auth/admin";
+import { urlSupabase, chaveSecretaSupabase } from "@/lib/supabase/credenciais";
 
 const SQL_SETUP = `
 -- ENUMs
@@ -200,33 +201,39 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ erro: "Não autorizado." }, { status: 401 });
   }
 
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  let supabaseUrl: string;
+  try {
+    supabaseUrl = urlSupabase();
+    chaveSecretaSupabase(); // valida que a chave privilegiada está configurada
+  } catch (erro) {
+    return NextResponse.json({ erro: (erro as Error).message }, { status: 500 });
+  }
 
-  if (!serviceKey || !supabaseUrl) {
+  // A Management API do Supabase (única forma de rodar DDL arbitrário por
+  // HTTP) exige um personal access token (`sbp_...`), gerado manualmente em
+  // supabase.com/dashboard/account/tokens — não é a mesma coisa que a
+  // service_role key do projeto (que só serve para a REST API de dados).
+  const accessToken = process.env.SUPABASE_ACCESS_TOKEN;
+  if (!accessToken) {
     return NextResponse.json(
-      { erro: "SUPABASE_SERVICE_ROLE_KEY não configurada no Vercel." },
+      {
+        erro:
+          "SUPABASE_ACCESS_TOKEN não configurado. Gere um personal access token em " +
+          "supabase.com/dashboard/account/tokens e adicione como variável de ambiente " +
+          "na Vercel (nome sugerido: SUPABASE_ACCESS_TOKEN) para esta rota poder rodar o SQL de setup.",
+      },
       { status: 500 }
     );
   }
 
-  const res = await fetch(`${supabaseUrl}/rest/v1/rpc/exec_sql`, {
-    method: "POST",
-    headers: {
-      apikey: serviceKey,
-      Authorization: `Bearer ${serviceKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ sql: SQL_SETUP }),
-  });
+  const projectRef = new URL(supabaseUrl).hostname.split(".")[0];
 
-  // Supabase não tem rpc/exec_sql nativo — usa pg via Management API
   const mgRes = await fetch(
-    `https://api.supabase.com/v1/projects/${supabaseUrl.split(".")[0].replace("https://", "")}/database/query`,
+    `https://api.supabase.com/v1/projects/${projectRef}/database/query`,
     {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${serviceKey}`,
+        Authorization: `Bearer ${accessToken}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ query: SQL_SETUP }),
