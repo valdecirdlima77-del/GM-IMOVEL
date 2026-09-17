@@ -2,6 +2,13 @@ import Link from "next/link";
 import { criarClienteSupabaseServidor } from "@/lib/supabase/server";
 import ImovelCard from "@/components/imovel/ImovelCard";
 
+// Sem isso, o Next.js cacheia a primeira resposta do Supabase e nunca
+// atualiza — foi o que fez a home mostrar "em breve novos imóveis" mesmo
+// depois de existir imóvel publicado no banco (o fetch ficou cacheado como
+// vazio da primeira vez que a rota rodou sem nenhum imóvel cadastrado).
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function HomePage() {
   const supabase = criarClienteSupabaseServidor();
 

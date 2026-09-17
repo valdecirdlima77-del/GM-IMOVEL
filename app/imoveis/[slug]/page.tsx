@@ -2,6 +2,13 @@ import { notFound } from "next/navigation";
 import { criarClienteSupabaseServidor } from "@/lib/supabase/server";
 import GaleriaFotos from "@/components/imovel/GaleriaFotos";
 
+// Sem isso, o Next.js cacheia a primeira resposta do Supabase para cada
+// slug — um imóvel publicado depois de alguém já ter batido nesse slug
+// (ou depois do primeiro deploy sem imóveis) ficaria 404 pra sempre, mesmo
+// existindo no banco. Mesmo problema já corrigido em app/imoveis/page.tsx.
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 type ImovelDetalhe = {
   id: string;
   titulo: string;
