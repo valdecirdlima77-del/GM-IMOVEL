@@ -9,12 +9,21 @@ import { alertarAdminGM } from "@/lib/notificacoes/whatsapp";
 // do próprio texto da mensagem para não exigir criar um cliente fantasma
 // só para satisfazer uma FK.
 export async function POST(request: NextRequest) {
-  const corpo = (await request.json()) as {
+  let corpo: {
     nome?: unknown;
     email?: unknown;
     telefone?: unknown;
     mensagem?: unknown;
   };
+
+  try {
+    corpo = await request.json();
+  } catch {
+    return NextResponse.json(
+      { erro: "Corpo da requisição inválido: esperado JSON." },
+      { status: 400 }
+    );
+  }
 
   const nome = typeof corpo.nome === "string" ? corpo.nome.trim() : "";
   const email = typeof corpo.email === "string" ? corpo.email.trim() : "";

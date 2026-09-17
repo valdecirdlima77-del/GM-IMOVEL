@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { criarClienteSupabaseAdmin } from "@/lib/supabase/admin";
 import { cronAutorizado } from "@/lib/auth/cron";
 
-// Gera a cobrança do mês corrente para toda locação ativa que ainda não tem
-// uma cobrança dessa competência.
+// Gera a cobrança do mês corrente para toda locação não encerrada (ativa,
+// inadimplente ou em renovação) que ainda não tem uma cobrança dessa
+// competência.
 //
 // Sem esta rota, só a PRIMEIRA cobrança de cada locação existia (criada no
 // momento do cadastro em /api/imoveis-alugados) — a partir do 2º mês, nada
@@ -22,53 +23,63 @@ export async function GET(request: NextRequest) {
   const hoje = new Date();
   const competencia = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, "0")}-01`;
 
+  // Exclui só quem já encerrou. Uma locação `inadimplente` continua sendo
+  // cobrada todo mês — parar de gerar cobrança pra quem está em atraso
+  // faria a dívida parar de crescer no sistema, o oposto do que essa rota
+  // existe para evitar (ver P0-3 acima).
   const { data: locacoes, error: erroLocacoes } = await supabase
     .from("imoveis_alugados")
     .select("id, valor_aluguel, dia_vencimento")
-    .eq("status", "ativo");
+    .neq("status", "encerrado");
 
   if (erroLocacoes) {
     return NextResponse.json({ erro: erroLocacoes.message }, { status: 500 });
   }
 
   const lista = locacoes ?? [];
-  let criadas = 0;
-  const erros: string[] = [];
+  const mesFmt = String(hoje.getMonth() + 1).padStart(2, "0");
 
-  for (const locacao of lista) {
+  const linhas = lista.map((locacao) => {
     const diaVencimento = locacao.dia_vencimento ?? 5;
-    const mesFmt = String(hoje.getMonth() + 1).padStart(2, "0");
-    const dataVencimento = `${hoje.getFullYear()}-${mesFmt}-${String(diaVencimento).padStart(2, "0")}`;
-
-    // O unique (imovel_alugado_id, competencia) do schema garante que essa
-    // chamada nunca duplica cobrança para a mesma locação/mês, mesmo se o
-    // cron rodar mais de uma vez no período.
-    const { error: erroInsercao } = await supabase.from("cobrancas").insert({
+    return {
       imovel_alugado_id: locacao.id,
       competencia,
-      data_vencimento: dataVencimento,
+      data_vencimento: `${hoje.getFullYear()}-${mesFmt}-${String(diaVencimento).padStart(2, "0")}`,
       valor_previsto: locacao.valor_aluguel,
-      status: "pendente",
+      status: "pendente" as const,
+    };
+  });
+
+  if (linhas.length === 0) {
+    return NextResponse.json({
+      ok: true,
+      competencia,
+      locacoes_consideradas: 0,
+      cobrancas_criadas: 0,
     });
+  }
 
-    if (erroInsercao) {
-      // Código 23505 = violação de unique constraint — a cobrança desse mês
-      // já existia (cron rodou de novo, ou foi criada manualmente). Não é
-      // erro de verdade, só pula.
-      if (erroInsercao.code !== "23505") {
-        erros.push(`${locacao.id}: ${erroInsercao.message}`);
-      }
-      continue;
-    }
+  // upsert com ignoreDuplicates: o unique (imovel_alugado_id, competencia)
+  // do schema faz esta chamada pular, em lote, qualquer locação que já
+  // tenha cobrança dessa competência — nunca duplica, mesmo se o cron
+  // rodar mais de uma vez no período. Uma única ida ao banco em vez de uma
+  // por locação.
+  const { data: criadas, error: erroInsercao } = await supabase
+    .from("cobrancas")
+    .upsert(linhas, {
+      onConflict: "imovel_alugado_id,competencia",
+      ignoreDuplicates: true,
+    })
+    .select("id");
 
-    criadas += 1;
+  if (erroInsercao) {
+    return NextResponse.json({ erro: erroInsercao.message }, { status: 500 });
   }
 
   return NextResponse.json({
     ok: true,
     competencia,
-    locacoes_ativas: lista.length,
-    cobrancas_criadas: criadas,
-    erros,
+    locacoes_consideradas: lista.length,
+    cobrancas_criadas: criadas?.length ?? 0,
   });
 }

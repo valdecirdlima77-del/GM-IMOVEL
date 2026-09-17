@@ -31,6 +31,7 @@ export default function ContatoPage() {
   async function aoEnviar(e: FormEvent<HTMLFormElement>): Promise<void> {
     e.preventDefault();
     setErro("");
+    setEnviado(false);
     setEnviando(true);
 
     try {
