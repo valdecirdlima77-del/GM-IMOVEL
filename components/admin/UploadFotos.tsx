@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import { criarClienteSupabase } from "@/lib/supabase/client";
 import { comprimirImagem } from "@/lib/imagens/comprimir";
 
 type Foto = {
@@ -31,14 +30,10 @@ export default function UploadFotos({ imovelId }: UploadFotosProps) {
 
   useEffect(() => {
     async function carregarFotos() {
-      const supabase = criarClienteSupabase();
-      const { data } = await supabase
-        .from("fotos")
-        .select("id, url, ordem, principal")
-        .eq("imovel_id", imovelId)
-        .order("ordem", { ascending: true });
+      const resposta = await fetch(`/api/imoveis/${imovelId}/fotos`);
+      const corpo = (await resposta.json().catch(() => ({}))) as { fotos?: Foto[] };
 
-      setFotos((data as Foto[]) ?? []);
+      setFotos(resposta.ok ? (corpo.fotos ?? []) : []);
       setCarregando(false);
     }
 
@@ -67,9 +62,10 @@ export default function UploadFotos({ imovelId }: UploadFotosProps) {
         );
 
         const formData = new FormData();
+        formData.append("imovel_id", imovelId);
         formData.append("arquivo", blob, nomeArquivo);
 
-        const resposta = await fetch(`/api/imoveis/${imovelId}/fotos`, {
+        const resposta = await fetch("/api/fotos/upload", {
           method: "POST",
           body: formData,
         });

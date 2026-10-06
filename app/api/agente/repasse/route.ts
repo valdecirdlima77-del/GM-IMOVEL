@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { criarClienteSupabaseAdmin } from "@/lib/supabase/admin";
 import { agenteAutorizado } from "@/lib/auth/agente";
+import { hojeNoEscritorio } from "@/lib/datas";
 
 // GET /api/agente/repasse?telefone=5567999999999
 //
@@ -31,7 +32,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ erro: "Nenhum proprietário encontrado para esse telefone." }, { status: 404 });
   }
 
-  const competenciaAtual = new Date().toISOString().slice(0, 7) + "-01";
+  // Mês corrente em Brasília (America/Cuiaba), não em UTC do servidor.
+  const competenciaAtual = hojeNoEscritorio().slice(0, 7) + "-01";
 
   const { data: repasse } = await supabase
     .from("repasses")

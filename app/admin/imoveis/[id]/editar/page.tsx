@@ -2,7 +2,6 @@
 
 import { useParams, useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
-import { criarClienteSupabase } from "@/lib/supabase/client";
 import UploadFotos from "@/components/admin/UploadFotos";
 
 const TIPOS = ["casa", "apartamento", "terreno", "comercial", "rural"];
@@ -117,23 +116,19 @@ export default function EditarImovelPage() {
 
   useEffect(() => {
     async function carregarImovel() {
-      const supabase = criarClienteSupabase();
+      const resposta = await fetch(`/api/imoveis/${imovelId}`);
+      const corpo = (await resposta.json().catch(() => ({}))) as {
+        imovel?: ImovelComEndereco;
+        erro?: string;
+      };
 
-      const { data, error } = await supabase
-        .from("imoveis")
-        .select(
-          "titulo, slug, descricao, tipo, finalidade, status, preco, condominio, iptu, area_util, quartos, banheiros, vagas_garagem, enderecos(logradouro, numero, complemento, bairro, cidade, estado, cep)"
-        )
-        .eq("id", imovelId)
-        .single();
-
-      if (error || !data) {
+      if (!resposta.ok || !corpo.imovel) {
         setMensagemErro("Não foi possível carregar o imóvel.");
         setCarregando(false);
         return;
       }
 
-      const imovel = data as unknown as ImovelComEndereco;
+      const imovel = corpo.imovel;
 
       setForm({
         titulo: imovel.titulo,
@@ -175,7 +170,7 @@ export default function EditarImovelPage() {
 
     try {
       const resposta = await fetch(`/api/imoveis/${imovelId}`, {
-        method: "PUT",
+        method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           titulo: form.titulo,

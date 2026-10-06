@@ -15,6 +15,25 @@ type RotaContexto = {
   params: { id: string };
 };
 
+// Leitura das fotos para a tela de edição (antes lida direto do navegador).
+export async function GET(request: NextRequest, context: RotaContexto) {
+  if (!requisicaoAutorizada(request)) {
+    return NextResponse.json({ erro: "Não autorizado." }, { status: 401 });
+  }
+
+  const supabase = criarClienteSupabaseAdmin();
+  const { data, error } = await supabase
+    .from("fotos")
+    .select("id, url, ordem, principal")
+    .eq("imovel_id", context.params.id)
+    .order("ordem", { ascending: true });
+
+  if (error) {
+    return NextResponse.json({ erro: "Não foi possível carregar as fotos." }, { status: 500 });
+  }
+  return NextResponse.json({ fotos: data ?? [] });
+}
+
 export async function POST(request: NextRequest, context: RotaContexto) {
   if (!requisicaoAutorizada(request)) {
     return NextResponse.json({ erro: "Não autorizado." }, { status: 401 });

@@ -29,6 +29,31 @@ type RotaContexto = {
   params: { id: string };
 };
 
+// Leitura para a tela de edição. Antes ela lia `imoveis` direto do navegador
+// com a chave pública; agora passa por aqui, com cookie gm_admin e service role.
+export async function GET(request: NextRequest, context: RotaContexto) {
+  if (!requisicaoAutorizada(request)) {
+    return NextResponse.json({ erro: "Não autorizado." }, { status: 401 });
+  }
+
+  const supabase = criarClienteSupabaseAdmin();
+  const { data, error } = await supabase
+    .from("imoveis")
+    .select(
+      "titulo, slug, descricao, tipo, finalidade, status, preco, condominio, iptu, area_util, quartos, banheiros, vagas_garagem, enderecos(logradouro, numero, complemento, bairro, cidade, estado, cep)"
+    )
+    .eq("id", context.params.id)
+    .maybeSingle();
+
+  if (error) {
+    return NextResponse.json({ erro: "Não foi possível carregar o imóvel." }, { status: 500 });
+  }
+  if (!data) {
+    return NextResponse.json({ erro: "Imóvel não encontrado." }, { status: 404 });
+  }
+  return NextResponse.json({ imovel: data });
+}
+
 export async function PUT(request: NextRequest, context: RotaContexto) {
   if (!requisicaoAutorizada(request)) {
     return NextResponse.json({ erro: "Não autorizado." }, { status: 401 });
@@ -120,3 +145,8 @@ export async function PUT(request: NextRequest, context: RotaContexto) {
 
   return NextResponse.json({ imovel }, { status: 200 });
 }
+
+// POST é o mesmo handler do PUT (mesmo cookie gm_admin, mesma service role,
+// mesmas regras). A tela de edição usa POST para não depender de acesso
+// direto ao banco pelo navegador.
+export const POST = PUT;

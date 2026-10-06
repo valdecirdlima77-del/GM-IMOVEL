@@ -28,6 +28,14 @@ const GRUPOS = [
       { href: "/admin/alugueis/inquilinos", label: "Inquilinos", icone: "🧑" },
     ],
   },
+  {
+    titulo: "Expansão",
+    itens: [
+      { href: "/admin/clientes", label: "Clientes", icone: "👥" },
+      { href: "/admin/juridico", label: "Jurídico", icone: "⚖️" },
+      { href: "/admin/financeiro", label: "Financeiro", icone: "💼" },
+    ],
+  },
 ];
 
 export default function AdminLayout({ children }: AdminLayoutProps) {

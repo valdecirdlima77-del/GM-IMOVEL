@@ -3,6 +3,7 @@ import { criarClienteSupabaseAdmin } from "@/lib/supabase/admin";
 import { cronAutorizado } from "@/lib/auth/cron";
 import { enviarEmail } from "@/lib/notificacoes/email";
 import { enviarWhatsApp } from "@/lib/notificacoes/whatsapp";
+import { hojeNoEscritorio } from "@/lib/datas";
 import { formatarMoeda, competenciaLabel } from "@/lib/formatadores";
 
 // Envia, uma vez por mês, um resumo do que cada proprietário recebeu de
@@ -14,7 +15,8 @@ export async function GET(request: NextRequest) {
   }
   const supabase = criarClienteSupabaseAdmin();
 
-  const competencia = new Date().toISOString().slice(0, 7) + "-01";
+  // Mês corrente em Brasília (America/Cuiaba), não em UTC do servidor.
+  const competencia = hojeNoEscritorio().slice(0, 7) + "-01";
 
   const { data: proprietarios, error } = await supabase
     .from("proprietarios")
